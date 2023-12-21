@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -107,4 +108,12 @@ public class AudioVideoController {
         return new File(url.getFile()).getAbsolutePath();
     }
 
+    private Long sizeFromFile(Path path) {
+        try {
+            return Files.size(path);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return 0L;
+    }
 }
