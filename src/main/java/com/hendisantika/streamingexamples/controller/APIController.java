@@ -68,4 +68,10 @@ public class APIController {
                 .contentType(MediaType.APPLICATION_STREAM_JSON)
                 .body(responseBody);
     }
+
+    @GetMapping(value = "/json/flux", produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
+    public Flux<Student> streamJsonObjects() {
+        //return studentRepository.findAll();
+        return Flux.interval(Duration.ofSeconds(1)).map(i -> new Student("Name" + i, i.intValue()));
+    }
 }
