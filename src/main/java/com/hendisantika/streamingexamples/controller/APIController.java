@@ -127,4 +127,13 @@ public class APIController {
                 .contentType(MediaType.TEXT_PLAIN)
                 .body(stream);
     }
+
+    @GetMapping(value = "/zip")
+    public ResponseEntity<StreamingResponseBody> getZipFileStream() {
+        StreamingResponseBody stream = output -> writeToStream(output);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report.zip")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(stream);
+    }
 }
