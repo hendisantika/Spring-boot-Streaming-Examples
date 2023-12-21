@@ -2,6 +2,7 @@ package com.hendisantika.streamingexamples.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hendisantika.streamingexamples.model.Student;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,5 +74,24 @@ public class APIController {
     public Flux<Student> streamJsonObjects() {
         //return studentRepository.findAll();
         return Flux.interval(Duration.ofSeconds(1)).map(i -> new Student("Name" + i, i.intValue()));
+    }
+
+    @GetMapping("/textfile")
+    public ResponseEntity<StreamingResponseBody> streamContentAsFile() {
+        StreamingResponseBody responseBody = response -> {
+            for (int i = 1; i <= 1000; i++) {
+                response.write(("Data stream line - " + i + "\n").getBytes());
+                response.flush();
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=test_data.txt")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(responseBody);
     }
 }
