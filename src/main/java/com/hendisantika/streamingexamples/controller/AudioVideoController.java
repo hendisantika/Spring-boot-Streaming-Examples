@@ -29,4 +29,9 @@ public class AudioVideoController {
         return Mono.just(getContent(VIDEO_PATH, fileName, httpRangeList, "video"));
     }
 
+    @GetMapping("/audios/{fileName}")
+    public Mono<ResponseEntity<byte[]>> streamAudio(@RequestHeader(value = "Range", required = false) String httpRangeList,
+                                                    @PathVariable("fileName") String fileName) {
+        return Mono.just(getContent(AUDIO_PATH, fileName, httpRangeList, "audio"));
+    }
 }
