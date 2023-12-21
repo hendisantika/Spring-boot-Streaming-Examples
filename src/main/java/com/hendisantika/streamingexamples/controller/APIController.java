@@ -5,12 +5,16 @@ import com.hendisantika.streamingexamples.model.Student;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import reactor.core.publisher.Flux;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
 import java.time.Duration;
 
 /**
@@ -92,6 +96,19 @@ public class APIController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=test_data.txt")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(responseBody);
+    }
+
+    @GetMapping("/pdfFile")
+    public ResponseEntity<StreamingResponseBody> streamPdfFile() throws FileNotFoundException {
+        String fileName = "Technicalsand.com sample data.pdf";
+        File file = ResourceUtils.getFile("classpath:static/" + fileName);
+        StreamingResponseBody responseBody = outputStream -> {
+            Files.copy(file.toPath(), outputStream);
+        };
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Downloaded_" + fileName)
+                .contentType(MediaType.APPLICATION_PDF)
                 .body(responseBody);
     }
 }
