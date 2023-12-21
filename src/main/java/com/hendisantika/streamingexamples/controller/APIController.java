@@ -13,8 +13,12 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import reactor.core.publisher.Flux;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Created by IntelliJ IDEA.
@@ -135,5 +139,25 @@ public class APIController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report.zip")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(stream);
+    }
+
+    public void writeToStream(OutputStream os) throws IOException {
+        ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(os));
+        ZipEntry e = new ZipEntry("data.csv");
+        zipOut.putNextEntry(e);
+        Writer writer = new BufferedWriter(new OutputStreamWriter(zipOut, StandardCharsets.UTF_8.newEncoder()));
+        for (int i = 1; i <= 1000; i++) {
+            Student st = new Student("Name" + i, i);
+            writer.write(st.getName() + "," + st.getRollNo() + "\n");
+            writer.flush();
+        }
+        if (writer != null) {
+            try {
+                writer.flush();
+                writer.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
     }
 }
