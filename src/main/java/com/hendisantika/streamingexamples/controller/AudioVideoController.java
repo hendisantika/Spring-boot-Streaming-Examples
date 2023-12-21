@@ -1,8 +1,13 @@
 package com.hendisantika.streamingexamples.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 
 /**
@@ -33,5 +38,46 @@ public class AudioVideoController {
     public Mono<ResponseEntity<byte[]>> streamAudio(@RequestHeader(value = "Range", required = false) String httpRangeList,
                                                     @PathVariable("fileName") String fileName) {
         return Mono.just(getContent(AUDIO_PATH, fileName, httpRangeList, "audio"));
+    }
+
+    private ResponseEntity<byte[]> getContent(String location, String fileName, String range, String contentTypePrefix) {
+        long rangeStart = 0;
+        long rangeEnd;
+        byte[] data;
+        Long fileSize;
+        String fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
+        try {
+            fileSize = Optional.ofNullable(fileName)
+                    .map(file -> Paths.get(getFilePath(location), file))
+                    .map(this::sizeFromFile)
+                    .orElse(0L);
+            if (range == null) {
+                return ResponseEntity.status(HttpStatus.OK)
+                        .header("Content-Type", contentTypePrefix + "/" + fileType)
+                        .header("Content-Length", String.valueOf(fileSize))
+                        .body(readByteRange(location, fileName, rangeStart, fileSize - 1));
+            }
+            String[] ranges = range.split("-");
+            rangeStart = Long.parseLong(ranges[0].substring(6));
+            if (ranges.length > 1) {
+                rangeEnd = Long.parseLong(ranges[1]);
+            } else {
+                rangeEnd = fileSize - 1;
+            }
+            if (fileSize < rangeEnd) {
+                rangeEnd = fileSize - 1;
+            }
+            data = readByteRange(location, fileName, rangeStart, rangeEnd);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        String contentLength = String.valueOf((rangeEnd - rangeStart) + 1);
+        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                .header("Content-Type", contentTypePrefix + "/" + fileType)
+                .header("Accept-Ranges", "bytes")
+                .header("Content-Length", contentLength)
+                .header("Content-Range", "bytes" + " " + rangeStart + "-" + rangeEnd + "/" + fileSize)
+                .body(data);
     }
 }
