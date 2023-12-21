@@ -1,5 +1,7 @@
 package com.hendisantika.streamingexamples.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hendisantika.streamingexamples.model.Student;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,5 +45,27 @@ public class APIController {
     @GetMapping(value = "/data/flux", produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
     public Flux<Object> streamDataFlux() {
         return Flux.interval(Duration.ofSeconds(1)).map(i -> "Data stream line - " + i);
+    }
+
+    @GetMapping("/json")
+    public ResponseEntity<StreamingResponseBody> streamJson() {
+        int maxRecords = 1000;
+        StreamingResponseBody responseBody = response -> {
+            for (int i = 1; i <= maxRecords; i++) {
+                Student st = new Student("Name" + i, i);
+                ObjectMapper mapper = new ObjectMapper();
+                String jsonString = mapper.writeValueAsString(st) + "\n";
+                response.write(jsonString.getBytes());
+                response.flush();
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_STREAM_JSON)
+                .body(responseBody);
     }
 }
