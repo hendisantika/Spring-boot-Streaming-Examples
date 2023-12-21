@@ -5,8 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -98,6 +100,11 @@ public class AudioVideoController {
             System.arraycopy(bufferedOutputStream.toByteArray(), (int) start, result, 0, result.length);
             return result;
         }
+    }
+
+    private String getFilePath(String location) {
+        URL url = this.getClass().getResource(location);
+        return new File(url.getFile()).getAbsolutePath();
     }
 
 }
