@@ -13,7 +13,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import reactor.core.publisher.Flux;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
@@ -105,7 +104,7 @@ public class APIController {
     @GetMapping("/pdfFile")
     public ResponseEntity<StreamingResponseBody> streamPdfFile() throws FileNotFoundException {
         String fileName = "Technicalsand.com sample data.pdf";
-        File file = ResourceUtils.getFile("classpath:static/" + fileName);
+        File file = ResourceUtils.getFile("classpath:static/files/" + fileName);
         StreamingResponseBody responseBody = outputStream -> {
             Files.copy(file.toPath(), outputStream);
         };
